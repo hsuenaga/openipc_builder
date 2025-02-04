@@ -10,10 +10,13 @@
 # Copy Kernel and Rootfs to Archive
 # Copy Kernel and Rootfs to TFTP server
 
-while getopts u OPT; do
+while getopts lu OPT; do
 	case $OPT in
 		u)
 			UPDATE="yes"
+			;;
+		l)
+			LINK_LATEST="yes"
 			;;
 		*)
 			exit 0
@@ -80,6 +83,13 @@ copy_to_archive() {
 
     if $(echo ${DEVICE} | grep -q hi3518ev200_lite); then
         autoup_rootfs
+    fi
+
+    if [ "X${LINK_LATEST}" = "Xyes" ]; then
+      LATEST="${BUILDER_DIR}/archive/latest"
+
+      rm -f "${LATEST}"
+      ln -s "${BUILDER_DIR}/archive/${DEVICE}/${TIMESTAMP}" "${LATEST}"
     fi
 }
 
