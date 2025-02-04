@@ -10,14 +10,6 @@
 # Copy Kernel and Rootfs to Archive
 # Copy Kernel and Rootfs to TFTP server
 
-DEVICE="$1"
-BUILDER_DIR=$(pwd)
-FIRMWARE_DIR="${BUILDER_DIR}/openipc"
-TIMESTAMP=$(date +"%Y%m%d%H%M")
-VERSION=$(stat -c"%Y" $0)
-FIRMWARE_REPOSITORY="https://github.com/OpenIPC/firmware.git"
-BUILDER_REPOSITORY="https://github.com/hsuenaga/openipc_builder.git"
-
 while getopts u OPT; do
 	case $OPT in
 		u)
@@ -29,6 +21,14 @@ while getopts u OPT; do
 	esac
 done
 shift $((OPTIND - 1))
+
+DEVICE="$1"
+BUILDER_DIR=$(pwd)
+FIRMWARE_DIR="${BUILDER_DIR}/openipc"
+TIMESTAMP=$(date +"%Y%m%d%H%M")
+VERSION=$(stat -c"%Y" $0)
+FIRMWARE_REPOSITORY="https://github.com/OpenIPC/firmware.git"
+BUILDER_REPOSITORY="https://github.com/hsuenaga/openipc_builder.git"
 
 echo_c() {
     # 30 grey, 31 red, 32 green, 33 yellow, 34 blue, 35 magenta, 36 cyan, 37 white
