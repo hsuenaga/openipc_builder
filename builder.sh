@@ -15,6 +15,20 @@ BUILDER_DIR=$(pwd)
 FIRMWARE_DIR="${BUILDER_DIR}/openipc"
 TIMESTAMP=$(date +"%Y%m%d%H%M")
 VERSION=$(stat -c"%Y" $0)
+FIRMWARE_REPOSITORY="https://github.com/OpenIPC/firmware.git"
+BUILDER_REPOSITORY="https://github.com/hsuenaga/openipc_builder.git"
+
+while getopts u OPT; do
+	case $OPT in
+		u)
+			UPDATE="yes"
+			;;
+		*)
+			exit 0
+			;;
+	esac
+done
+shift $((OPTIND - 1))
 
 echo_c() {
     # 30 grey, 31 red, 32 green, 33 yellow, 34 blue, 35 magenta, 36 cyan, 37 white
@@ -105,13 +119,18 @@ tree -C "${ITEM}"
 
 sleep 3
 
-echo_c 33 "\nUpdating Builder"
+echo_c 33 "\nUpdating Builder (${BUILDER_REPOSITORY})"
 git pull
 
-rm -rf openipc
+if [ "X${UPDATE}" != "Xyes" ]; then
+    rm -rf openipc
+else
+    echo_c 33 "Skip cleanup due to -u option."
+fi
+
 if [ ! -d "$FIRMWARE_DIR" ]; then
     echo_c 33 "\nDownloading Firmware"
-    git clone --depth=1 https://github.com/OpenIPC/firmware.git "$FIRMWARE_DIR"
+    git clone --depth=1 "$FIRMWARE_REPOSITORY" "$FIRMWARE_DIR"
     cd "$FIRMWARE_DIR"
 else
     echo_c 33 "\nUpdating Firmware"
