@@ -38,7 +38,7 @@ cd builder
 ./build-wifilinkjp.sh
 ```
 
-build-wifilinkjp.sh creates WiFiLink-part0.bin and WiFiLink-part1.bin in builder folder. Copy those to your SD card, and reboot WiFILINK board. Then, the board update firmware automatically. Don't power off during LED brinking.
+build-wifilinkjp.sh creates WiFiLink-part0.bin and WiFiLink-part1.bin in builder folder. Copy those to your SD card, and reboot WiFILINK board. Then, the board update firmware automatically. Don't power off during LED blinking.
 
 ### Existing problems
 
