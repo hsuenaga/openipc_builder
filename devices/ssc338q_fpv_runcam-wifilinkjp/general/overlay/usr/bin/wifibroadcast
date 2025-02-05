@@ -39,9 +39,11 @@ detect_wifi_card() {
 				modprobe 88XXau rtw_tx_pwr_idx_override="$driver_txpower_override"
 				;;
 
-			"056e:400e" | "0411:0242")
+			"0411:0242" | "0411:029b" | "056e:4007" | "056e:400e" | "056e:400f" | "056e:4010" | "2019:ab32" | "2357:011e" | "2357:011f" | "2357:0120")
+				# RTL8821A based devices that is selled in Japanese Market.
+				# XXX: rtw_tx_pwr_idx_override is not implemented yet. @svpcom says it's not working on this version.
 				driver="88XXau"
-				modprobe 88XXau rtw_tx_pwr_idx_override="$driver_txpower_override"
+				modprobe 88XXau
 				;;
 
 			"0bda:a81a")
