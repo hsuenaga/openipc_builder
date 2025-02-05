@@ -1,0 +1,26 @@
+diff --git a/Makefile b/Makefile
+index 6f95ff1..753282f 100755
+--- a/Makefile
++++ b/Makefile
+@@ -52,7 +52,7 @@ CONFIG_RTW_CHPLAN = 0xFF
+ CONFIG_RTW_ADAPTIVITY_EN = disable
+ CONFIG_RTW_ADAPTIVITY_MODE = normal
+ CONFIG_SIGNAL_SCALE_MAPPING = n
+-CONFIG_80211W = y
++CONFIG_80211W = n
+ CONFIG_REDUCE_TX_CPU_LOADING = n
+ CONFIG_BR_EXT = y
+ CONFIG_TDLS = n
+@@ -72,10 +72,10 @@ CONFIG_IP_R_MONITOR = n #arp VOQ and high rate
+ # disable virtual intf for openwrt 21.02
+ CONFIG_RTW_VIRTUAL_INTF = n
+ ########################## Debug ###########################
+-CONFIG_RTW_DEBUG = n
++CONFIG_RTW_DEBUG = y
+ # default log level is _DRV_INFO_ = 4,
+ # please refer to "How_to_set_driver_debug_log_level.doc" to set the available level.
+-CONFIG_RTW_LOG_LEVEL = 2
++CONFIG_RTW_LOG_LEVEL = 5
+ ######################## Wake On Lan ##########################
+ CONFIG_WOWLAN = n
+ #bit2: deauth, bit1: unicast, bit0: magic pkt.
