@@ -2,7 +2,9 @@
 
 ## OpenIPC WiFiLINK Builder for Japanese Users
 **_Experimental system for building OpenIPC firmware for RunCam WiFiLINK devices_**
-- **_[Current release of firmware builds](https://github.com/OpenIPC/builder/releases/tag/latest)_**
+![IMG_8831](https://github.com/user-attachments/assets/577efe56-576c-49b4-b492-021cb1393e6c)
+Ancient "UR85HD Bushido" is reborn as "UR85HD OpenIPC". WiFi Dongle is Japanese TELEC certified tp-link Archer T2U Nano.
+More modern build is recommended, of course.
 
 
 ### Specialized features
