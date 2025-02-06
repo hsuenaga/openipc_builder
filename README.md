@@ -43,12 +43,22 @@ build-wifilinkjp.sh creates WiFiLink-part0.bin and WiFiLink-part1.bin in builder
 ### Existing problems
 
 - Tx power level is not tweaked. DON'T USE THIS FIRMWARE FOR OUTDOOR LONG RANGE FLIGHTS.
-- DFS is not disabled. VIDEO STREAM CAN BE INTERRUPTED BY DFS. DON'T FLY NEARBY HUMANS, ANIMALS, OR ANY CRASHABLE MATERIALS.
+- DFS is not disabled. VIDEO STREAM CAN BE INTERRUPTED BY DFS. DON'T FLY NEARBY HUMANS, ANIMALS, OR ANY FRGILE MATERIALS.
 
 ### Additional information
 
 - USB WiFi driver is replaced by aircrack-ng's repository. This enables RTL8814A based devices and RTL8821A based devices. RTL8814A is not tested.
 - You can replace out of box WiFi module. To replace it, you need to DYI JST-SH 6-pins(1mm pitch) connector to USB Type-A Female adaptor.
+
+### DIY Cable
+Looking for USB port on your WiFiLINK board. My own board has silk print 'WIFI' and original RTL8812AU WiFi module was conncted.
+![IMG_8823](https://github.com/user-attachments/assets/404af5ca-d9e4-4e3e-8556-ba52500e45bf)
+
+The port on WiFiLINK board uses JST-SH 1mm pitch connecter. There are some pig-tail type JST-SH connectors in market. I recommend to buy those. It's pretty difficult to make 1mm pitch contact using generic press fit tool.
+![IMG_8824](https://github.com/user-attachments/assets/141e710b-8c59-45f9-b6f6-3aed1dce8019)
+
+Here is connection diagram. I recommend to check +5V and GND connections before connecting your WiFi dongle. Cheap USB checker is enough.
+![IMG_8825](https://github.com/user-attachments/assets/45fcf315-b485-411b-9299-f48d812bcf52)
 
 ### Technical support and donations
 
