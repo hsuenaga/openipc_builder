@@ -1,0 +1,17 @@
+config BR2_PACKAGE_BACKPORT_MAC80211
+	bool "backport-mac80211"
+	depends on BR2_LINUX_KERNEL
+	help
+	  The Backports Project enables old kernels to run the latest drivers.
+
+	  “Backporting” is the process of making new software run on something
+	  old. A version of something new that’s been modified to run on
+	  something old is called a “backport”.
+
+	  The Backports Project develops tools to automate the backporting
+	  process for Linux drivers. These tools form the backports suite.
+
+	  https://backports.docs.kernel.org/index.html
+
+comment "backport-mac80211 needs a Linux kernel to be built"
+	depends on !BR2_LINUX_KERNEL
