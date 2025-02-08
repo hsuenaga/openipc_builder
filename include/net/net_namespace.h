@@ -126,7 +126,7 @@ struct net {
 	struct list_head	nfct_timeout_list;
 #endif
 #endif
-#ifdef CONFIG_WEXT_CORE
+#if defined(CONFIG_WEXT_CORE) || defined(CONFIG_BACKPORT_WEXT_CORE)
 	struct sk_buff_head	wext_nlevents;
 #endif
 	struct net_generic __rcu	*gen;

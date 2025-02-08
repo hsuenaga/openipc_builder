@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0-only
+obj-$(CONFIG_BACKPORT_B43)		+= b43/
+obj-$(CONFIG_BACKPORT_B43LEGACY)		+= b43legacy/
+
+obj-$(CONFIG_BACKPORT_BRCMFMAC)	+= brcm80211/
+obj-$(CONFIG_BACKPORT_BRCMSMAC)	+= brcm80211/

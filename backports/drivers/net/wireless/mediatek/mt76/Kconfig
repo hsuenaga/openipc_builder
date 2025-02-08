@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config BACKPORT_MT76_CORE
+	tristate
+	depends on !MT76_CORE
+
+config BACKPORT_MT76_LEDS
+	bool
+	depends on !MT76_LEDS
+	depends on BACKPORT_MT76_CORE
+	depends on LEDS_CLASS=y || BACKPORT_MT76_CORE=LEDS_CLASS
+	default y
+
+config BACKPORT_MT76_USB
+	tristate
+	depends on !MT76_USB
+	depends on BACKPORT_MT76_CORE
+
+config BACKPORT_MT76_SDIO
+	tristate
+	depends on !MT76_SDIO
+	depends on BACKPORT_MT76_CORE
+
+config BACKPORT_MT76x02_LIB
+	tristate
+	depends on !MT76x02_LIB
+	select BACKPORT_MT76_CORE
+
+config BACKPORT_MT76x02_USB
+	tristate
+	depends on !MT76x02_USB
+	select BACKPORT_MT76_USB
+
+config BACKPORT_MT76_CONNAC_LIB
+	tristate
+	depends on !MT76_CONNAC_LIB
+	select BACKPORT_MT76_CORE
+
+source "$BACKPORT_DIR/drivers/net/wireless/mediatek/mt76/mt76x0/Kconfig"
+source "$BACKPORT_DIR/drivers/net/wireless/mediatek/mt76/mt76x2/Kconfig"
+source "$BACKPORT_DIR/drivers/net/wireless/mediatek/mt76/mt7603/Kconfig"
+source "$BACKPORT_DIR/drivers/net/wireless/mediatek/mt76/mt7615/Kconfig"
+source "$BACKPORT_DIR/drivers/net/wireless/mediatek/mt76/mt7915/Kconfig"
+source "$BACKPORT_DIR/drivers/net/wireless/mediatek/mt76/mt7921/Kconfig"

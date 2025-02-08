@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: ISC
+config BACKPORT_MT7921E
+	tristate "MediaTek MT7921E (PCIe) support"
+	depends on !MT7921E
+	select BACKPORT_MT76_CONNAC_LIB
+	depends on WANT_DEV_COREDUMP
+	depends on BACKPORT_MAC80211
+	depends on PCI
+	help
+	  This adds support for BACKPORT_MT7921E 802.11ax 2x2:2SS wireless devices.
+
+	  To compile this driver as a module, choose M here.

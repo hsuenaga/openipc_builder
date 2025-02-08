@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+config BACKPORT_ATH11K
+	tristate "Qualcomm Technologies 802.11ax chipset support"
+	depends on !ATH11K
+	depends on BACKPORT_MAC80211 && HAS_DMA
+	depends on CRYPTO_MICHAEL_MIC
+	select BACKPORT_ATH_COMMON
+	select BACKPORT_QCOM_QMI_HELPERS
+	help
+	  This module adds support for Qualcomm Technologies 802.11ax family of
+	  chipsets.
+
+	  If you choose to build a module, it'll be called ath11k.
+
+config BACKPORT_ATH11K_AHB
+	tristate "Atheros ath11k AHB support"
+	depends on !ATH11K_AHB
+	depends on BACKPORT_ATH11K
+	depends on REMOTEPROC
+	help
+	  This module adds support for AHB bus
+
+config BACKPORT_ATH11K_PCI
+	tristate "Atheros ath11k PCI support"
+	depends on !ATH11K_PCI
+	depends on BACKPORT_ATH11K && PCI
+	select BACKPORT_MHI_BUS
+	select BACKPORT_QRTR
+	select BACKPORT_QRTR_MHI
+	help
+	  This module adds support for PCIE bus
+
+config BACKPORT_ATH11K_DEBUG
+	bool "QCA ath11k debugging"
+	depends on !ATH11K_DEBUG
+	depends on BACKPORT_ATH11K
+	help
+	  Enables debug support
+
+	  If unsure, say Y to make it easier to debug problems.
+
+config BACKPORT_ATH11K_DEBUGFS
+	bool "QCA ath11k debugfs support"
+	depends on !ATH11K_DEBUGFS
+	depends on ATH11K && DEBUG_FS && BACKPORT_MAC80211_DEBUGFS
+	help
+	  Enable ath11k debugfs support
+
+	  If unsure, say Y to make it easier to debug problems.
+
+config BACKPORT_ATH11K_TRACING
+	bool "ath11k tracing support"
+	depends on !ATH11K_TRACING
+	depends on BACKPORT_ATH11K && EVENT_TRACING
+	help
+	  Select this to use ath11k tracing infrastructure.
+
+config BACKPORT_ATH11K_SPECTRAL
+	bool "QCA ath11k spectral scan support"
+	depends on !ATH11K_SPECTRAL
+	depends on BACKPORT_ATH11K_DEBUGFS
+	depends on RELAY
+	help
+	  Enable ath11k spectral scan support
+
+	  Say Y to enable access to the FFT/spectral data via debugfs.

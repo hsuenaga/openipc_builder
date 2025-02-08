@@ -4,8 +4,10 @@ config ARCH_INFINITY6E
     select ARM_GIC
     select VFP
     select VFPv3
-    select WIRELESS_EXT if WIRELESS && NET
-    select WEXT_PRIV    if WIRELESS && NET
+    select WIRELESS_EXT if WIRELESS && NET && !BACKPORT_LINUX
+    select WEXT_PRIV    if WIRELESS && NET && !BACKPORT_LINUX
+    select BACKPORT_WIRELESS_EXT if WIRELESS && NET && BACKPORT_LINUX
+    select BACKPORT_WEXT_PRIV    if WIRELESS && NET && BACKPORT_LINUX
     help
       Support for iNfinity6E SoC
 

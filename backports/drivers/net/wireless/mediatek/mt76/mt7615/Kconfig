@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config BACKPORT_MT7615_COMMON
+	tristate
+	depends on !MT7615_COMMON
+	select BPAUTO_WANT_DEV_COREDUMP
+	select BACKPORT_MT76_CONNAC_LIB
+
+config BACKPORT_MT7615E
+	tristate "MediaTek MT7615E and MT7663E (PCIe) support"
+	depends on !MT7615E
+	select BACKPORT_MT7615_COMMON
+	depends on BACKPORT_MAC80211
+	depends on PCI
+	help
+	  This adds support for MT7615-based wireless PCIe devices,
+	  which support concurrent dual-band operation at both 5GHz
+	  and 2.4GHz, IEEE 802.11ac 4x4:4SS 1733Mbps PHY rate, wave2
+	  MU-MIMO up to 4 users/group and 160MHz channels.
+
+	  To compile this driver as a module, choose M here.
+
+config BACKPORT_MT7622_WMAC
+	bool "MT7622 (SoC) WMAC support"
+	depends on !MT7622_WMAC
+	depends on BACKPORT_MT7615E
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	depends on REGMAP
+	default y
+	help
+	  This adds support for the built-in WMAC on MT7622 SoC devices
+	  which has the same feature set as a MT7615, but limited to
+	  2.4 GHz only.
+
+config BACKPORT_MT7663_USB_SDIO_COMMON
+	tristate
+	depends on !MT7663_USB_SDIO_COMMON
+	select BACKPORT_MT7615_COMMON
+
+config BACKPORT_MT7663U
+	tristate "MediaTek MT7663U (USB) support"
+	depends on !MT7663U
+	select BACKPORT_MT76_USB
+	select BACKPORT_MT7663_USB_SDIO_COMMON
+	depends on BACKPORT_MAC80211
+	depends on USB
+	help
+	  This adds support for BACKPORT_MT7663U 802.11ac 2x2:2 wireless devices.
+
+	  To compile this driver as a module, choose M here.
+
+config BACKPORT_MT7663S
+	tristate "MediaTek MT7663S (SDIO) support"
+	depends on !MT7663S
+	select BACKPORT_MT76_SDIO
+	select BACKPORT_MT7663_USB_SDIO_COMMON
+	depends on BACKPORT_MAC80211
+	depends on MMC
+	help
+	  This adds support for BACKPORT_MT7663S 802.11ac 2x2:2 wireless devices.
+
+	  To compile this driver as a module, choose M here.

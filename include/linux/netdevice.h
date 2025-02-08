@@ -1697,7 +1697,7 @@ struct net_device {
 	atomic_long_t		tx_dropped;
 	atomic_long_t		rx_nohandler;
 
-#ifdef CONFIG_WIRELESS_EXT
+#if defined(CONFIG_WIRELESS_EXT) || defined(CONFIG_BACKPORT_WIRELESS_EXT)
 	const struct iw_handler_def *wireless_handlers;
 	struct iw_public_data	*wireless_data;
 #endif
