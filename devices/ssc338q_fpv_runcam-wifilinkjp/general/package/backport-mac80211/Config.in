@@ -1,57 +1,57 @@
 comment "linux-backports needs a Linux kernel to be built"
 	depends on !BR2_LINUX_KERNEL
 
-config BACKPORT_MAC80211
+config BR2_PACKAGE_BACKPORT_MAC80211
 	bool "backport-mac80211"
 	depends on BR2_LINUX_KERNEL
 	help
-	  The linux-backports package includes many Linux drivers from
+	  The backport-mac80211 package includes many Linux drivers from
 	  recent kernels, backported to older ones.
 
 	  https://backports.wiki.kernel.org
 
-if BACKPORT_MAC80211
+if BR2_PACKAGE_BACKPORT_MAC80211
 
 choice
 	prompt "Linux Backports version"
-	default BACKPORT_MAC80211_5_15_X
+	default BR2_PACKAGE_BACKPORT_MAC80211_5_15_X
 	help
 	  Select the highest version that supports your kernel version.
 
-config BACKPORT_MAC80211_6_1_X
+config BR2_PACKAGE_BACKPORT_MAC80211_6_1_X
 	bool "6.1.x (for kernels back to 4.11)"
 
-config BACKPORT_MAC80211_5_15_X
+config BR2_PACKAGE_BACKPORT_MAC80211_5_15_X
 	bool "5.15.x (for kernels back to 4.4)"
 
-config BACKPORT_MAC80211_5_10_X
+config BR2_PACKAGE_BACKPORT_MAC80211_5_10_X
 	bool "5.10.x (for kernels back to 3.10)"
 
 endchoice
 
 choice
 	prompt "Linux kernel driver backports configuration"
-	default BACKPORT_MAC80211_USE_DEFCONFIG
+	default BR2_PACKAGE_BACKPORT_MAC80211_USE_DEFCONFIG
 
-config BACKPORT_MAC80211_USE_DEFCONFIG
+config BR2_PACKAGE_BACKPORT_MAC80211_USE_DEFCONFIG
 	bool "Using an in-tree defconfig file"
 
-config BACKPORT_MAC80211_USE_CUSTOM_CONFIG
+config BR2_PACKAGE_BACKPORT_MAC80211_USE_CUSTOM_CONFIG
 	bool "Using a custom (def)config file"
 
 endchoice
 
-config BACKPORT_MAC80211_DEFCONFIG
+config BR2_PACKAGE_BACKPORT_MAC80211_DEFCONFIG
 	string "Defconfig name"
-	depends on BACKPORT_MAC80211_USE_DEFCONFIG
+	depends on BR2_PACKAGE_BACKPORT_MAC80211_USE_DEFCONFIG
 	help
 	  Name of the backports defconfig file to use, without the
 	  leading defconfig-. The defconfig is located in defconfigs/
 	  directory in the backports tree.
 
-config BACKPORT_MAC80211_CUSTOM_CONFIG_FILE
+config BR2_PACKAGE_BACKPORT_MAC80211_CUSTOM_CONFIG_FILE
 	string "Configuration file path"
-	depends on BACKPORT_MAC80211_USE_CUSTOM_CONFIG
+	depends on BR2_PACKAGE_BACKPORT_MAC80211_USE_CUSTOM_CONFIG
 	help
 	  Path to the backports configuration file
 
@@ -59,10 +59,10 @@ config BACKPORT_MAC80211_CUSTOM_CONFIG_FILE
 	  file, which can later be saved back with make
 	  linux-update-(def)config.
 
-config BACKPORT_MAC80211_CONFIG_FRAGMENT_FILES
+config BR2_PACKAGE_BACKPORT_MAC80211_CONFIG_FRAGMENT_FILES
 	string "Additional configuration fragment files"
 	help
 	  A space-separated list of configuration fragment files, that
 	  will be merged to the main linux-backports configuration file.
 
-endif # BACKPORT_MAC80211
+endif # BR2_PACKAGE_BACKPORT_MAC80211
