@@ -1,0 +1,8 @@
+git://git.kernel.org/pub/scm/linux/kernel/git/backports/backports.git
+   9fa1c65c1573042cd328294b0484b48830ce0ac2
+
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+   003148680b790d8c7da6f58a76d126d1a5a8aebe
+
+git@github.com:lwfinger/rtw88.git
+   e32c796572ee22ae172411fe5c1183921eca498e

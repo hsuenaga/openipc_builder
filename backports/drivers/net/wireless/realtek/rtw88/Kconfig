@@ -14,10 +14,19 @@ if BACKPORT_RTW88
 config BACKPORT_RTW88_CORE
 	tristate
 	depends on !RTW88_CORE
+	select WANT_DEV_COREDUMP
 
 config BACKPORT_RTW88_PCI
 	tristate
-	depends on !RTW88_PCI
+	depends on !RTW88_CORE
+
+config BACKPORT_RTW88_SDIO
+	tristate
+	depends on !RTW88_SDIO
+
+config BACKPORT_RTW88_USB
+	tristate
+	depends on !RTW88_USB
 
 config BACKPORT_RTW88_8822B
 	tristate
@@ -27,18 +36,42 @@ config BACKPORT_RTW88_8822C
 	tristate
 	depends on !RTW88_8822C
 
+config BACKPORT_RTW88_8723X
+	tristate
+	depends on !RTW88_8723X
+
+config BACKPORT_RTW88_8703B
+	tristate
+	depends on !RTW88_8703B
+	select BACKPORT_RTW88_8723X
+
 config BACKPORT_RTW88_8723D
 	tristate
 	depends on !RTW88_8723D
+	select BACKPORT_RTW88_8723X
 
 config BACKPORT_RTW88_8821C
 	tristate
 	depends on !RTW88_8821C
 
+config BACKPORT_RTW88_88XXA
+	tristate
+	depends on !RTW88_88XXA
+
+config BACKPORT_RTW88_8821A
+	tristate
+	depends on !RTW88_8821A
+	select BACKPORT_RTW88_88XXA
+
+config BACKPORT_RTW88_8812A
+	tristate
+	depends on !RTW88_8812A
+	select BACKPORT_RTW88_88XXA
+
 config BACKPORT_RTW88_8822BE
 	tristate "Realtek 8822BE PCI wireless network adapter"
-	depends on !RTW88_8822BE
 	depends on PCI
+	depends on !RTW88_8822BE
 	select BACKPORT_RTW88_CORE
 	select BACKPORT_RTW88_PCI
 	select BACKPORT_RTW88_8822B
@@ -46,6 +79,30 @@ config BACKPORT_RTW88_8822BE
 	  Select this option will enable support for 8822BE chipset
 
 	  802.11ac PCIe wireless network adapter
+
+config BACKPORT_RTW88_8822BS
+	tristate "Realtek 8822BS SDIO wireless network adapter"
+	depends on !RTW88_8822BS
+	depends on MMC
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_SDIO
+	select BACKPORT_RTW88_8822B
+	help
+	  Select this option will enable support for 8822BS chipset
+
+	  802.11ac SDIO wireless network adapter
+
+config BACKPORT_RTW88_8822BU
+	tristate "Realtek 8822BU USB wireless network adapter"
+	depends on !RTW88_8822BU
+	depends on USB
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_USB
+	select BACKPORT_RTW88_8822B
+	help
+	  Select this option will enable support for 8822BU chipset
+
+	  802.11ac USB wireless network adapter
 
 config BACKPORT_RTW88_8822CE
 	tristate "Realtek 8822CE PCI wireless network adapter"
@@ -59,6 +116,30 @@ config BACKPORT_RTW88_8822CE
 
 	  802.11ac PCIe wireless network adapter
 
+config BACKPORT_RTW88_8822CS
+	tristate "Realtek 8822CS SDIO wireless network adapter"
+	depends on !RTW88_8822CS
+	depends on MMC
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_SDIO
+	select BACKPORT_RTW88_8822C
+	help
+	  Select this option will enable support for 8822CS chipset
+
+	  802.11ac SDIO wireless network adapter
+
+config BACKPORT_RTW88_8822CU
+	tristate "Realtek 8822CU USB wireless network adapter"
+	depends on !RTW88_8822CU
+	depends on USB
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_USB
+	select BACKPORT_RTW88_8822C
+	help
+	  Select this option will enable support for 8822CU chipset
+
+	  802.11ac USB wireless network adapter
+
 config BACKPORT_RTW88_8723DE
 	tristate "Realtek 8723DE PCI wireless network adapter"
 	depends on !RTW88_8723DE
@@ -71,6 +152,45 @@ config BACKPORT_RTW88_8723DE
 
 	  802.11n PCIe wireless network adapter
 
+config BACKPORT_RTW88_8723DS
+	tristate "Realtek 8723DS SDIO wireless network adapter"
+	depends on !RTW88_8723DS
+	depends on MMC
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_SDIO
+	select BACKPORT_RTW88_8723D
+	help
+	  Select this option will enable support for 8723DS chipset
+
+	  802.11n SDIO wireless network adapter
+
+config BACKPORT_RTW88_8723CS
+	tristate "Realtek 8723CS SDIO wireless network adapter"
+	depends on !RTW88_8723CS
+	depends on MMC
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_SDIO
+	select BACKPORT_RTW88_8703B
+	help
+	  Select this option to enable support for 8723CS chipset (EXPERIMENTAL)
+
+	  This module adds support for the 8723CS 802.11n SDIO
+	  wireless network adapter.
+
+	  If you choose to build a module, it'll be called rtw88_8723cs.
+
+config BACKPORT_RTW88_8723DU
+	tristate "Realtek 8723DU USB wireless network adapter"
+	depends on !RTW88_8723DU
+	depends on USB
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_USB
+	select BACKPORT_RTW88_8723D
+	help
+	  Select this option will enable support for 8723DU chipset
+
+	  802.11n USB wireless network adapter
+
 config BACKPORT_RTW88_8821CE
 	tristate "Realtek 8821CE PCI wireless network adapter"
 	depends on !RTW88_8821CE
@@ -82,6 +202,54 @@ config BACKPORT_RTW88_8821CE
 	  Select this option will enable support for 8821CE chipset
 
 	  802.11ac PCIe wireless network adapter
+
+config BACKPORT_RTW88_8821CS
+	tristate "Realtek 8821CS SDIO wireless network adapter"
+	depends on !RTW88_8821CS
+	depends on MMC
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_SDIO
+	select BACKPORT_RTW88_8821C
+	help
+	  Select this option will enable support for 8821CS chipset
+
+	  802.11ac SDIO wireless network adapter
+
+config BACKPORT_RTW88_8821CU
+	tristate "Realtek 8821CU USB wireless network adapter"
+	depends on !RTW88_8821CU
+	depends on USB
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_USB
+	select BACKPORT_RTW88_8821C
+	help
+	  Select this option will enable support for 8821CU chipset
+
+	  802.11ac USB wireless network adapter
+
+config BACKPORT_RTW88_8821AU
+	tristate "Realtek 8821AU/8811AU USB wireless network adapter"
+	depends on !RTW88_8821AU
+	depends on USB
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_USB
+	select BACKPORT_RTW88_8821A
+	help
+	  Select this option will enable support for 8821AU and 8811AU chipset
+
+	  802.11ac USB wireless network adapter
+
+config BACKPORT_RTW88_8812AU
+	tristate "Realtek 8812AU USB wireless network adapter"
+	depends on !RTW88_8812AU
+	depends on USB
+	select BACKPORT_RTW88_CORE
+	select BACKPORT_RTW88_USB
+	select BACKPORT_RTW88_8812A
+	help
+	  Select this option will enable support for 8812AU chipset
+
+	  802.11ac USB wireless network adapter
 
 config BACKPORT_RTW88_DEBUG
 	bool "Realtek rtw88 debug support"
@@ -100,5 +268,11 @@ config BACKPORT_RTW88_DEBUGFS
 	  Enable debug support
 
 	  If unsure, say Y to simplify debug problems
+
+config BACKPORT_RTW88_LEDS
+	bool
+	depends on !RTW88_LEDS
+	depends on LEDS_CLASS=y || LEDS_CLASS=BACKPORT_MAC80211
+	default y
 
 endif

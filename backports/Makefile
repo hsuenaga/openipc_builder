@@ -27,6 +27,7 @@ NOSTDINC_FLAGS += \
 	-I$(BACKPORT_DIR)/include/ \
 	-I$(BACKPORT_DIR)/include/uapi \
 	-include $(BACKPORT_DIR)/backport-include/backport/backport.h \
+	-DBACKPORT_VERSION_CODE=331697 \
 	$(CFLAGS)
 endif
 
