@@ -7,7 +7,7 @@
 struct net;
 
 #ifdef CONFIG_BACKPORT_WEXT_CORE
-int wext_handle_ioctl(struct net *net, unsigned int cmd,
+int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
 		      void __user *arg);
 int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
 			     unsigned long arg);

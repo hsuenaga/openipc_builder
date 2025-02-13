@@ -5,7 +5,7 @@
 
 struct net;
 
-#ifdef CONFIG_WEXT_CORE
+#if defined(CONFIG_WEXT_CORE) || defined(CONFIG_BACKPORT_WEXT_CORE)
 int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
 		      void __user *arg);
 int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
@@ -26,7 +26,7 @@ static inline int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
 }
 #endif
 
-#ifdef CONFIG_WEXT_PROC
+#if defined(CONFIG_WEXT_PROC) || defined(CONFIG_BACKPORT_WEXT_PROC)
 int wext_proc_init(struct net *net);
 void wext_proc_exit(struct net *net);
 #else
@@ -40,7 +40,7 @@ static inline void wext_proc_exit(struct net *net)
 }
 #endif
 
-#ifdef CONFIG_WEXT_PRIV
+#if defined(CONFIG_WEXT_PRIV) || defined(CONFIG_BACKPORT_WEXT_PRIV)
 int ioctl_private_call(struct net_device *dev, struct iwreq *iwr,
 		       unsigned int cmd, struct iw_request_info *info,
 		       iw_handler handler);

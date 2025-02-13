@@ -652,7 +652,7 @@ EXPORT_SYMBOL(wireless_send_event);
 
 struct iw_statistics *get_wireless_stats(struct net_device *dev)
 {
-#ifdef CONFIG_WIRELESS_EXT
+#ifdef CONFIG_BACKPORT_WIRELESS_EXT
 	if ((dev->wireless_handlers != NULL) &&
 	   (dev->wireless_handlers->get_wireless_stats != NULL))
 		return dev->wireless_handlers->get_wireless_stats(dev);
@@ -703,7 +703,7 @@ static iw_handler get_handler(struct net_device *dev, unsigned int cmd)
 	if (dev->ieee80211_ptr && dev->ieee80211_ptr->wiphy)
 		handlers = dev->ieee80211_ptr->wiphy->wext;
 #endif
-#ifdef CONFIG_WIRELESS_EXT
+#ifdef CONFIG_BACKPORT_WIRELESS_EXT
 	if (dev->wireless_handlers)
 		handlers = dev->wireless_handlers;
 #endif
@@ -716,7 +716,7 @@ static iw_handler get_handler(struct net_device *dev, unsigned int cmd)
 	if (index < handlers->num_standard)
 		return handlers->standard[index];
 
-#ifdef CONFIG_WEXT_PRIV
+#ifdef CONFIG_BACKPORT_WEXT_PRIV
 	/* Try as a private command */
 	index = cmd - SIOCIWFIRSTPRIV;
 	if (index < handlers->num_private)
@@ -914,7 +914,7 @@ out:
  */
 int call_commit_handler(struct net_device *dev)
 {
-#ifdef CONFIG_WIRELESS_EXT
+#ifdef CONFIG_BACKPORT_WIRELESS_EXT
 	if (netif_running(dev) &&
 	    dev->wireless_handlers &&
 	    dev->wireless_handlers->standard[0])
@@ -956,7 +956,7 @@ static int wireless_process_ioctl(struct net *net, struct iwreq *iwr,
 		return standard(dev, iwr, cmd, info,
 				&iw_handler_get_iwstats);
 
-#ifdef CONFIG_WEXT_PRIV
+#ifdef CONFIG_BACKPORT_WEXT_PRIV
 	if (cmd == SIOCGIWPRIV && dev->wireless_handlers)
 		return standard(dev, iwr, cmd, info,
 				iw_handler_get_private);
@@ -1054,7 +1054,7 @@ static int ioctl_standard_call(struct net_device *	dev,
 }
 
 
-int wext_handle_ioctl(struct net *net, unsigned int cmd, void __user *arg)
+int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd, void __user *arg)
 {
 	struct iw_request_info info = { .cmd = cmd, .flags = 0 };
 	struct iwreq iwr;

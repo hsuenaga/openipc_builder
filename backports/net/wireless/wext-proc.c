@@ -35,7 +35,7 @@ static void wireless_seq_printf_stats(struct seq_file *seq,
 
 	/* show device if it's wireless regardless of current stats */
 	if (!stats) {
-#ifdef CONFIG_WIRELESS_EXT
+#ifdef CONFIG_BACKPORT_WIRELESS_EXT
 		if (dev->wireless_handlers)
 			stats = &nullstats;
 #endif

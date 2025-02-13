@@ -1295,7 +1295,7 @@ void cfg80211_init_wdev(struct wireless_dev *wdev)
 	INIT_WORK(&wdev->pmsr_free_wk, cfg80211_pmsr_free_wk);
 
 #ifdef CONFIG_BACKPORT_CFG80211_WEXT
-#ifdef CONFIG_WIRELESS_EXT
+#ifdef CONFIG_BACKPORT_WIRELESS_EXT
 	if (!wdev->netdev->wireless_handlers)
 		wdev->netdev->wireless_handlers = &cfg80211_wext_handler;
 #endif
