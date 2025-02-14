@@ -246,6 +246,7 @@ struct packet_skb_cb {
 
 static void __fanout_unlink(struct sock *sk, struct packet_sock *po);
 static void __fanout_link(struct sock *sk, struct packet_sock *po);
+static void packet_pick_tx_queue(struct net_device *dev, struct sk_buff *skb);
 
 static int packet_direct_xmit(struct sk_buff *skb)
 {
@@ -262,6 +263,7 @@ static int packet_direct_xmit(struct sk_buff *skb)
 	if (skb != orig_skb)
 		goto drop;
 
+	packet_pick_tx_queue(dev, skb);
 	txq = skb_get_tx_queue(dev, skb);
 
 	local_bh_disable();
@@ -2750,8 +2752,6 @@ tpacket_error:
 			goto tpacket_error;
 		}
 
-		packet_pick_tx_queue(dev, skb);
-
 		skb->destructor = tpacket_destruct_skb;
 		__packet_set_status(po, ph, TP_STATUS_SENDING);
 		packet_inc_pending(&po->tx_ring);
@@ -2935,8 +2935,6 @@ static int packet_snd(struct socket *sock, struct msghdr *msg, size_t len)
 	skb->dev = dev;
 	skb->priority = sk->sk_priority;
 	skb->mark = sockc.mark;
-
-	packet_pick_tx_queue(dev, skb);
 
 	if (has_vnet_hdr) {
 		err = packet_snd_vnet_gso(skb, &vnet_hdr);
