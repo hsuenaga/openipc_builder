@@ -3825,6 +3825,9 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
 	}
 	case PACKET_QDISC_BYPASS:
 	{
+#if IS_ENABLED(CONFIG_MAC80211) || IS_ENABLED(CONFIG_BACKPORT_MAC80211)
+		pr_warn("PACKET_QDISC_BYPSS is disabled. It's not campatible with mac80211.\n");
+#else
 		int val;
 
 		if (optlen != sizeof(val))
@@ -3833,6 +3836,7 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
 			return -EFAULT;
 
 		po->xmit = val ? packet_direct_xmit : dev_queue_xmit;
+#endif
 		return 0;
 	}
 	default:
