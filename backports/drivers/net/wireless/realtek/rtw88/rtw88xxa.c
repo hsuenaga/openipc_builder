@@ -1215,6 +1215,7 @@ int rtw88xxa_power_on(struct rtw_dev *rtwdev)
 
 	/* ack for xmit mgmt frames. */
 	rtw_write32_set(rtwdev, REG_FWHW_TXQ_CTRL, BIT(12));
+	rtw_write32_set(rtwdev, REG_FWHW_TXQ_CTRL, BIT(13));
 
 	hal->cck_high_power = rtw_read32_mask(rtwdev, REG_CCK_RPT_FORMAT,
 					      BIT_CCK_RPT_FORMAT);
