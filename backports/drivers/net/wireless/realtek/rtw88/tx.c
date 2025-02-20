@@ -8,6 +8,10 @@
 #include "ps.h"
 #include "debug.h"
 
+#define OPENIPC_EXT
+
+#undef TRRACE_DESC
+
 static
 void rtw_tx_stats(struct rtw_dev *rtwdev, struct ieee80211_vif *vif,
 		  struct sk_buff *skb)
@@ -31,6 +35,27 @@ void rtw_tx_stats(struct rtw_dev *rtwdev, struct ieee80211_vif *vif,
 		}
 	}
 }
+
+#ifdef TRRACE_DESC
+static inline void dump_tx_desc(const struct rtw_tx_desc *tx_desc)
+{
+	static int i = 0;
+
+	if ((i++ % 100) != 0)
+		return;
+
+	printk("TxDesc[0]: 0x%08x\n", tx_desc->w0);
+	printk("TxDesc[1]: 0x%08x\n", tx_desc->w1);
+	printk("TxDesc[2]: 0x%08x\n", tx_desc->w2);
+	printk("TxDesc[3]: 0x%08x\n", tx_desc->w3);
+	printk("TxDesc[4]: 0x%08x\n", tx_desc->w4);
+	printk("TxDesc[5]: 0x%08x\n", tx_desc->w5);
+	printk("TxDesc[6]: 0x%08x\n", tx_desc->w6);
+	printk("TxDesc[7]: 0x%08x\n", tx_desc->w7);
+	printk("TxDesc[8]: 0x%08x\n", tx_desc->w8);
+	printk("TxDesc[9]: 0x%08x\n", tx_desc->w9);
+}
+#endif
 
 void rtw_tx_fill_tx_desc(struct rtw_dev *rtwdev,
 			 struct rtw_tx_pkt_info *pkt_info, struct sk_buff *skb)
@@ -90,6 +115,9 @@ void rtw_tx_fill_tx_desc(struct rtw_dev *rtwdev,
 	if (pkt_info->tim_offset)
 		tx_desc->w9 |= le32_encode_bits(1, RTW_TX_DESC_W9_TIM_EN) |
 			       le32_encode_bits(pkt_info->tim_offset, RTW_TX_DESC_W9_TIM_OFFSET);
+#ifdef TRRACE_DESC
+	dump_tx_desc(tx_desc);
+#endif
 }
 EXPORT_SYMBOL(rtw_tx_fill_tx_desc);
 
@@ -375,8 +403,21 @@ static void rtw_tx_data_pkt_info_update(struct rtw_dev *rtwdev,
 	seq = (le16_to_cpu(hdr->seq_ctrl) & IEEE80211_SCTL_SEQ) >> 4;
 
 	/* for broadcast/multicast, use default values */
+#ifdef OPENIPC_EXT
+	if (!sta) {
+		// wifibroadcast extentions
+		// XXX: we must looking for radiotap headers
+		bw = RTW_CHANNEL_WIDTH_20;
+		rate = DESC_RATEMCS1;
+		rate_id = RTW_RATEID_ARFR1_AC_1SS;
+		stbc = 0;
+		ldpc = 1;
+		goto out;
+	}
+#else
 	if (!sta)
 		goto out;
+#endif
 
 	if (info->flags & IEEE80211_TX_CTL_AMPDU) {
 		ampdu_en = true;
@@ -431,6 +472,14 @@ out:
 		pkt_info->dis_rate_fallback = true;
 		pkt_info->use_rate = true;
 	}
+#ifdef OPENIPC_EXT
+	/* always use specified rate */
+	if (!sta) {
+		pkt_info->rate = rate;
+		pkt_info->dis_rate_fallback = true;
+		pkt_info->use_rate = true;
+	}
+#endif
 }
 
 void rtw_tx_pkt_info_update(struct rtw_dev *rtwdev,
