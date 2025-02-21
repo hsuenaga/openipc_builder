@@ -2404,6 +2404,8 @@ netdev_tx_t ieee80211_monitor_start_xmit(struct sk_buff *skb,
 	/* remove the injection radiotap header */
 	skb_pull(skb, len_rthdr);
 
+	dev_sw_netstats_tx_add(dev, 1, skb->len);
+
 	ieee80211_xmit(sdata, NULL, skb);
 	rcu_read_unlock();
 
@@ -2412,6 +2414,7 @@ netdev_tx_t ieee80211_monitor_start_xmit(struct sk_buff *skb,
 fail_rcu:
 	rcu_read_unlock();
 fail:
+	atomic_long_inc(&dev->tx_dropped);
 	dev_kfree_skb(skb);
 	return NETDEV_TX_OK; /* meaning, we dealt with the skb */
 }
