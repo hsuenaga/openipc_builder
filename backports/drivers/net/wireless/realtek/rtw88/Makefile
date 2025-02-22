@@ -6,6 +6,7 @@ rtw88_core-y += main.o \
 	   util.o \
 	   debug.o \
 	   tx.o \
+	   tx_param.o \
 	   rx.o \
 	   mac.o \
 	   phy.o \
