@@ -4,88 +4,118 @@
 #include "tx.h"
 #include "tx_param.h"
 
-bool bcast_rate_override = true;
-bool bcast_rate_valid = true;
+struct tx_rate_ctl {
+	bool present;
 
-uint bcast_rate_id = RTW_RATEID_BGN_20M_1SS;
-uint bcast_bw = RTW_CHANNEL_WIDTH_20;
-uint bcast_rate = DESC_RATEMCS1;
-bool bcast_stbc = false;
-bool bcast_ldpc = true;
+	u8 bw;
+	u8 rate_id;
+	u8 rate;
+	u8 nss;
+	bool short_gi;
+	bool stbc;
+	bool ldpc;
 
-static uint bcast_modulation = RTW_RATE_SECTION_HT_1S;
+	u8 modulation;
+};
 
-static bool bcast_update_rate(void)
+/* Extracted from Radiotap Header */
+static struct tx_rate_ctl skb_tx_rate_ctl = {
+	.present = false,
+	.bw = 0,
+	.rate_id = 0,
+	.rate = 0,
+	.nss = 0,
+	.short_gi = false,
+	.stbc = false,
+	.ldpc = false,
+	.modulation = 0
+};
+
+/* Extracted from module parameters */
+static struct tx_rate_ctl skb_tx_rate_ctl_bcast = {
+	.present = false,
+	.bw = RTW_CHANNEL_WIDTH_20,
+	.rate_id = RTW_RATEID_BGN_20M_1SS,
+	.rate = DESC_RATEMCS1,
+	.nss = 0,
+	.short_gi = false,
+	.stbc = false,
+	.ldpc = false,
+	.modulation = RTW_RATE_SECTION_HT_1S
+};
+
+static bool bcast_rate_ctl = false;
+
+static bool bcast_rate_update(void)
 {
-	switch (bcast_modulation) {
+	switch (skb_tx_rate_ctl_bcast.modulation) {
 		case RTW_RATE_SECTION_CCK:
-			bcast_rate_id = RTW_RATEID_B_20M;
-			if (bcast_rate > DESC_RATE11M)
+			skb_tx_rate_ctl_bcast.rate_id = RTW_RATEID_B_20M;
+			if (skb_tx_rate_ctl_bcast.rate > DESC_RATE11M)
 				return false;
 			break;
 		case RTW_RATE_SECTION_OFDM:
-			bcast_rate_id = RTW_RATEID_BG;
-			if (bcast_rate > DESC_RATE54M)
+			skb_tx_rate_ctl_bcast.rate_id = RTW_RATEID_BG;
+			if (skb_tx_rate_ctl_bcast.rate > DESC_RATE54M)
 				return false;
 			break;
 		case RTW_RATE_SECTION_HT_1S:
-			if (bcast_bw == RTW_CHANNEL_WIDTH_40)
-				bcast_rate_id = RTW_RATEID_BGN_40M_1SS;
-			else
-				bcast_rate_id = RTW_RATEID_BGN_20M_1SS;
-			if (bcast_rate < DESC_RATEMCS0 ||
-			    bcast_rate > DESC_RATEMCS7)
-				return false;
-			break;
 		case RTW_RATE_SECTION_HT_2S:
-			if (bcast_bw == RTW_CHANNEL_WIDTH_40)
-				bcast_rate_id = RTW_RATEID_BGN_40M_2SS;
-			else
-				bcast_rate_id = RTW_RATEID_BGN_20M_2SS;
-			if (bcast_rate < DESC_RATEMCS8 ||
-			    bcast_rate > DESC_RATEMCS15)
-				return false;
-			break;
 		case RTW_RATE_SECTION_HT_3S:
-			bcast_rate_id = RTW_RATEID_ARFR5_N_3SS;
-			if (bcast_rate < DESC_RATEMCS16 ||
-			    bcast_rate > DESC_RATEMCS23)
-				return false;
-			break;
 		case RTW_RATE_SECTION_HT_4S:
-			bcast_rate_id = RTW_RATEID_ARFR7_N_4SS;
-			if (bcast_rate < DESC_RATEMCS24 ||
-			    bcast_rate > DESC_RATEMCS31)
+			if (skb_tx_rate_ctl_bcast.rate <= DESC_RATEMCS7)
+				if (skb_tx_rate_ctl_bcast.bw == RTW_CHANNEL_WIDTH_40)
+					skb_tx_rate_ctl_bcast.rate_id =
+					    RTW_RATEID_BGN_40M_1SS;
+				else
+					skb_tx_rate_ctl_bcast.rate_id =
+					    RTW_RATEID_BGN_20M_1SS;
+			else if (skb_tx_rate_ctl_bcast.rate <= DESC_RATEMCS15)
+				if (skb_tx_rate_ctl_bcast.bw == RTW_CHANNEL_WIDTH_40)
+					skb_tx_rate_ctl_bcast.rate_id =
+					    RTW_RATEID_BGN_40M_2SS;
+				else
+					skb_tx_rate_ctl_bcast.rate_id =
+					    RTW_RATEID_BGN_20M_2SS;
+			else if (skb_tx_rate_ctl_bcast.rate <= DESC_RATEMCS23)
+				skb_tx_rate_ctl_bcast.rate_id = RTW_RATEID_ARFR5_N_3SS;
+			else if (skb_tx_rate_ctl_bcast.rate <= DESC_RATEMCS31)
+				skb_tx_rate_ctl_bcast.rate_id = RTW_RATEID_ARFR7_N_4SS;
+			else
 				return false;
 			break;
 		case RTW_RATE_SECTION_VHT_1S:
-			if (bcast_bw >= RTW_CHANNEL_WIDTH_80)
-				bcast_rate_id = RTW_RATEID_ARFR1_AC_1SS;
+			if (skb_tx_rate_ctl_bcast.bw >= RTW_CHANNEL_WIDTH_80)
+				skb_tx_rate_ctl_bcast.rate_id =
+				    RTW_RATEID_ARFR1_AC_1SS;
 			else
-				bcast_rate_id = RTW_RATEID_ARFR2_AC_2G_1SS;
-			if (bcast_rate < DESC_RATEMCS0 ||
-			    bcast_rate > DESC_RATEMCS9)
+				skb_tx_rate_ctl_bcast.rate_id =
+				    RTW_RATEID_ARFR2_AC_2G_1SS;
+			if (skb_tx_rate_ctl_bcast.rate < DESC_RATEMCS0 ||
+			    skb_tx_rate_ctl_bcast.rate > DESC_RATEMCS9)
 				return false;
 			break;
 		case RTW_RATE_SECTION_VHT_2S:
-			if (bcast_bw >= RTW_CHANNEL_WIDTH_80)
-				bcast_rate_id = RTW_RATEID_ARFR0_AC_2SS;
+			if (skb_tx_rate_ctl_bcast.bw >= RTW_CHANNEL_WIDTH_80)
+				skb_tx_rate_ctl_bcast.rate_id =
+				    RTW_RATEID_ARFR0_AC_2SS;
 			else
-				bcast_rate_id = RTW_RATEID_ARFR3_AC_2G_2SS;
-			if (bcast_rate < DESC_RATEMCS0 ||
-			    bcast_rate > DESC_RATEMCS9)
+				skb_tx_rate_ctl_bcast.rate_id =
+				    RTW_RATEID_ARFR3_AC_2G_2SS;
+			if (skb_tx_rate_ctl_bcast.rate < DESC_RATEMCS0 ||
+			    skb_tx_rate_ctl_bcast.rate > DESC_RATEMCS9)
 				return false;
 			break;
 		case RTW_RATE_SECTION_VHT_3S:
-			bcast_rate_id = RTW_RATEID_ARFR4_AC_3SS;
-			if (bcast_rate < DESC_RATEMCS0 ||
-			    bcast_rate > DESC_RATEMCS9)
+			skb_tx_rate_ctl_bcast.rate_id = RTW_RATEID_ARFR4_AC_3SS;
+			if (skb_tx_rate_ctl_bcast.rate < DESC_RATEMCS0 ||
+			    skb_tx_rate_ctl_bcast.rate > DESC_RATEMCS9)
 				return false;
 			break;
 		case RTW_RATE_SECTION_VHT_4S:
-			bcast_rate_id = RTW_RATEID_ARFR6_AC_4SS;
-			if (bcast_rate < DESC_RATEMCS0 ||
-			    bcast_rate > DESC_RATEMCS9)
+			skb_tx_rate_ctl_bcast.rate_id = RTW_RATEID_ARFR6_AC_4SS;
+			if (skb_tx_rate_ctl_bcast.rate < DESC_RATEMCS0 ||
+			    skb_tx_rate_ctl_bcast.rate > DESC_RATEMCS9)
 				return false;
 			break;
 		default:
@@ -128,15 +158,18 @@ static int bcast_bw_set(const char *val0, const struct kernel_param *kp)
 	else
 		return -EINVAL;
 
-	bcast_rate_valid = false;
-	bcast_bw = bw;
-	bcast_rate_valid = bcast_update_rate();
+	if (bw > RTW_MAX_CHANNEL_WIDTH)
+		return -ENOTSUPP;
+
+	skb_tx_rate_ctl_bcast.present = false;
+	skb_tx_rate_ctl_bcast.bw = bw;
+	skb_tx_rate_ctl_bcast.present = bcast_rate_update();
 
 	return 0;
 }
 static int bcast_bw_get(char *buf, const struct kernel_param *kp)
 {
-	switch (bcast_bw) {
+	switch (skb_tx_rate_ctl_bcast.bw) {
 		case RTW_CHANNEL_WIDTH_20:
 			strcpy(buf, "20");
 			break;
@@ -265,19 +298,21 @@ static int bcast_rate_set(const char *val0, const struct kernel_param *kp)
 		rate = DESC_RATEMCS30;
 	else if (strcasecmp(s, "MCS31") == 0)
 		rate = DESC_RATEMCS31;
+	else if (strncasecmp(s, "MCS", 3) == 0)
+		return -ENOTSUPP;
 	else
 		return -EINVAL;
 
-	bcast_rate_valid = false;
-	bcast_rate = rate;
-	bcast_rate_valid = bcast_update_rate();
+	skb_tx_rate_ctl_bcast.present = false;
+	skb_tx_rate_ctl_bcast.rate = rate;
+	skb_tx_rate_ctl_bcast.present = bcast_rate_update();
 
 	return 0;
 }
 
 static int bcast_rate_get(char *buf, const struct kernel_param *kp)
 {
-	switch (bcast_rate) {
+	switch (skb_tx_rate_ctl_bcast.rate) {
 		case DESC_RATE1M:
 			strcpy(buf, "1M");
 			break;
@@ -431,6 +466,8 @@ static int bcast_modulation_set(const char *val0,
 		modulation = RTW_RATE_SECTION_CCK;
 	else if (strcasecmp(s, "OFDM") == 0)
 		modulation = RTW_RATE_SECTION_OFDM;
+	else if (strcasecmp(s, "HT") == 0)
+		modulation = RTW_RATE_SECTION_HT_1S;
 	else if (strcasecmp(s, "HT-1S") == 0)
 		modulation = RTW_RATE_SECTION_HT_1S;
 	else if (strcasecmp(s, "HT-2S") == 0)
@@ -450,15 +487,15 @@ static int bcast_modulation_set(const char *val0,
 	else
 		return -EINVAL;
 
-	bcast_rate_valid = false;
-	bcast_modulation = modulation;
-	bcast_rate_valid = bcast_update_rate();
+	skb_tx_rate_ctl_bcast.present = false;
+	skb_tx_rate_ctl_bcast.modulation = modulation;
+	skb_tx_rate_ctl_bcast.present = bcast_rate_update();
 
 	return 0;
 }
 static int bcast_modulation_get(char *buf, const struct kernel_param *kp)
 {
-	switch (bcast_modulation) {
+	switch (skb_tx_rate_ctl_bcast.modulation) {
 		case RTW_RATE_SECTION_CCK:
 			strcpy(buf, "CCK");
 			break;
@@ -466,16 +503,10 @@ static int bcast_modulation_get(char *buf, const struct kernel_param *kp)
 			strcpy(buf, "OFDM");
 			break;
 		case RTW_RATE_SECTION_HT_1S:
-			strcpy(buf, "HT-1S");
-			break;
 		case RTW_RATE_SECTION_HT_2S:
-			strcpy(buf, "HT-2S");
-			break;
 		case RTW_RATE_SECTION_HT_3S:
-			strcpy(buf, "HT-3S");
-			break;
 		case RTW_RATE_SECTION_HT_4S:
-			strcpy(buf, "HT-4S");
+			strcpy(buf, "HT");
 			break;
 		case RTW_RATE_SECTION_VHT_1S:
 			strcpy(buf, "VHT-1S");
@@ -508,13 +539,13 @@ static int bcast_stbc_set(const char *val0, const struct kernel_param *kp)
 	char *s = safe_str(val, val0, sizeof(val));
 
 	if (strcasecmp(s, "enable") == 0)
-		bcast_stbc = true;
+		skb_tx_rate_ctl_bcast.stbc = true;
 	else if (strcasecmp(s, "disable") == 0)
-		bcast_stbc = false;
+		skb_tx_rate_ctl_bcast.stbc = false;
 	else if (strcmp(s, "0") == 0)
-		bcast_stbc = false;
+		skb_tx_rate_ctl_bcast.stbc = false;
 	else if (strcmp(s, "1") == 0)
-		bcast_stbc = true;
+		skb_tx_rate_ctl_bcast.stbc = true;
 	else
 		return -EINVAL;
 
@@ -522,7 +553,7 @@ static int bcast_stbc_set(const char *val0, const struct kernel_param *kp)
 }
 static int bcast_stbc_get(char *buf, const struct kernel_param *kp)
 {
-	if (bcast_stbc)
+	if (skb_tx_rate_ctl_bcast.stbc)
 		strcpy(buf, "enable");
 	else
 		strcpy(buf, "disable");
@@ -541,13 +572,13 @@ static int bcast_ldpc_set(const char *val0, const struct kernel_param *kp)
 	char *s = safe_str(val, val0, sizeof(val));
 
 	if (strcasecmp(s, "enable") == 0)
-		bcast_ldpc = true;
+		skb_tx_rate_ctl_bcast.ldpc = true;
 	else if (strcasecmp(s, "disable") == 0)
-		bcast_ldpc = false;
+		skb_tx_rate_ctl_bcast.ldpc = false;
 	else if (strcmp(s, "0") == 0)
-		bcast_ldpc = false;
+		skb_tx_rate_ctl_bcast.ldpc = false;
 	else if (strcmp(s, "1") == 0)
-		bcast_ldpc = true;
+		skb_tx_rate_ctl_bcast.ldpc = true;
 	else
 		return -EINVAL;
 
@@ -555,7 +586,7 @@ static int bcast_ldpc_set(const char *val0, const struct kernel_param *kp)
 }
 static int bcast_ldpc_get(char *buf, const struct kernel_param *kp)
 {
-	if (bcast_ldpc)
+	if (skb_tx_rate_ctl_bcast.ldpc)
 		strcpy(buf, "enable");
 	else
 		strcpy(buf, "disable");
@@ -568,39 +599,73 @@ static const struct kernel_param_ops bcast_ldpc_ops = {
 };
 module_param_cb(bcast_ldpc, &bcast_ldpc_ops, NULL, 0600);
 
-static int bcast_rate_override_set(const char *val0,
-    const struct kernel_param *kp)
+static int bcast_sgi_set(const char *val0, const struct kernel_param *kp)
 {
 	char val[8];
 	char *s = safe_str(val, val0, sizeof(val));
 
 	if (strcasecmp(s, "enable") == 0)
-		bcast_rate_override = true;
+		skb_tx_rate_ctl_bcast.short_gi = true;
 	else if (strcasecmp(s, "disable") == 0)
-		bcast_rate_override = false;
+		skb_tx_rate_ctl_bcast.short_gi = false;
 	else if (strcmp(s, "0") == 0)
-		bcast_rate_override = false;
+		skb_tx_rate_ctl_bcast.short_gi = false;
 	else if (strcmp(s, "1") == 0)
-		bcast_rate_override = true;
+		skb_tx_rate_ctl_bcast.short_gi = true;
 	else
 		return -EINVAL;
 
 	return 0;
 }
-static int bcast_rate_override_get(char *buf, const struct kernel_param *kp)
+static int bcast_sgi_get(char *buf, const struct kernel_param *kp)
 {
-	if (bcast_rate_override)
+	if (skb_tx_rate_ctl_bcast.short_gi)
 		strcpy(buf, "enable");
 	else
 		strcpy(buf, "disable");
 
 	return strlen(buf);
 }
-static const struct kernel_param_ops bcast_rate_override_ops = {
-	.set = bcast_rate_override_set,
-	.get = bcast_rate_override_get
+static const struct kernel_param_ops bcast_sgi_ops = {
+	.set = bcast_sgi_set,
+	.get = bcast_sgi_get
 };
-module_param_cb(bcast_rate_override, &bcast_rate_override_ops, NULL, 0600);
+module_param_cb(bcast_short_gi, &bcast_sgi_ops, NULL, 0600);
+
+static int bcast_rate_ctl_set(const char *val0,
+    const struct kernel_param *kp)
+{
+	char val[8];
+	char *s = safe_str(val, val0, sizeof(val));
+
+	if (strcasecmp(s, "enable") == 0)
+		bcast_rate_ctl = true;
+	else if (strcasecmp(s, "disable") == 0)
+		bcast_rate_ctl = false;
+	else if (strcmp(s, "0") == 0)
+		bcast_rate_ctl = false;
+	else if (strcmp(s, "1") == 0)
+		bcast_rate_ctl = true;
+	else
+		return -EINVAL;
+
+	return 0;
+}
+
+static int bcast_rate_ctl_get(char *buf, const struct kernel_param *kp)
+{
+	if (bcast_rate_ctl)
+		strcpy(buf, "enable");
+	else
+		strcpy(buf, "disable");
+
+	return strlen(buf);
+}
+static const struct kernel_param_ops bcast_rate_ctl_ops = {
+	.set = bcast_rate_ctl_set,
+	.get = bcast_rate_ctl_get
+};
+module_param_cb(bcast_rate_ctl, &bcast_rate_ctl_ops, NULL, 0600);
 
 static int bcast_rate_valid_set(const char *val0, const struct kernel_param *kp)
 {
@@ -608,7 +673,7 @@ static int bcast_rate_valid_set(const char *val0, const struct kernel_param *kp)
 }
 static int bcast_rate_valid_get(char *buf, const struct kernel_param *kp)
 {
-	if (bcast_rate_valid)
+	if (skb_tx_rate_ctl_bcast.present)
 		strcpy(buf, "valid");
 	else
 		strcpy(buf, "invalid");
@@ -620,3 +685,192 @@ static const struct kernel_param_ops bcast_rate_valid_ops = {
 	.get = bcast_rate_valid_get
 };
 module_param_cb(bcast_rate_valid, &bcast_rate_valid_ops, NULL, 0600);
+
+void __tx_rate_ctl_extract(struct ieee80211_tx_info *info,
+    struct tx_rate_ctl *txr)
+{
+	txr->present = false;
+
+	if (info->control.rates[0].flags & IEEE80211_TX_RC_VHT_MCS) {
+		/* VHT: actual rate is defined by MCS index & NSS & BW */
+		u8 mcs = info->control.rates[0].idx & 0x0f;
+		txr->nss = ((info->control.rates[0].idx >> 4) & 0x7);
+
+		if (txr->nss > 3 || mcs > 9)
+			return;
+
+		if (info->control.flags & IEEE80211_TX_RC_40_MHZ_WIDTH)
+			txr->bw = RTW_CHANNEL_WIDTH_40;
+		else if (info->control.flags & IEEE80211_TX_RC_80_MHZ_WIDTH)
+			txr->bw = RTW_CHANNEL_WIDTH_80;
+		else if (info->control.flags & IEEE80211_TX_RC_160_MHZ_WIDTH)
+			txr->bw = RTW_CHANNEL_WIDTH_160;
+		else
+			txr->bw = RTW_CHANNEL_WIDTH_20;
+
+		if (txr->bw > RTW_MAX_CHANNEL_WIDTH)
+			return;
+
+		txr->rate = DESC_RATEVHT1SS_MCS0 + txr->nss * 10 + mcs;
+
+		switch (txr->nss) {
+			case 0:
+				if (txr->bw >= RTW_CHANNEL_WIDTH_80)
+					txr->rate_id =
+					    RTW_RATEID_ARFR1_AC_1SS;
+				else
+					txr->rate_id =
+					    RTW_RATEID_ARFR2_AC_2G_1SS;
+				break;
+			case 1:
+				if (txr->bw >= RTW_CHANNEL_WIDTH_80)
+					txr->rate_id =
+					    RTW_RATEID_ARFR0_AC_2SS;
+				else
+					txr->rate_id =
+					    RTW_RATEID_ARFR3_AC_2G_2SS;
+			case 2:
+				txr->rate_id = RTW_RATEID_ARFR4_AC_3SS;
+				break;
+			case 3:
+				txr->rate_id = RTW_RATEID_ARFR6_AC_4SS;
+				break;
+			default:
+				return;
+		}
+	}
+	else if (info->control.rates[0].flags & IEEE80211_TX_RC_MCS) {
+		/* HT: actual rate is defined by MCS index only */
+		txr->nss = 0; /* not used */
+		txr->rate = DESC_RATEMCS0 + info->control.rates[0].idx;
+
+		if (info->control.flags & IEEE80211_TX_RC_40_MHZ_WIDTH)
+			txr->bw = RTW_CHANNEL_WIDTH_40;
+		else if (info->control.flags & IEEE80211_TX_RC_80_MHZ_WIDTH)
+			return;
+		else if (info->control.flags & IEEE80211_TX_RC_160_MHZ_WIDTH)
+			return;
+		else
+			txr->bw = RTW_CHANNEL_WIDTH_20;
+
+		if (txr->rate <= DESC_RATEMCS7)
+			if (txr->bw >= RTW_CHANNEL_WIDTH_40)
+				txr->rate_id = RTW_RATEID_BGN_40M_1SS;
+			else
+				txr->rate_id = RTW_RATEID_BGN_20M_1SS;
+		else if (txr->rate <= DESC_RATEMCS15)
+			if (txr->bw >= RTW_CHANNEL_WIDTH_40)
+				txr->rate_id = RTW_RATEID_BGN_40M_2SS;
+			else
+				txr->rate_id = RTW_RATEID_BGN_20M_2SS;
+		else if (txr->rate <= DESC_RATEMCS23)
+			txr->rate_id = RTW_RATEID_ARFR5_N_3SS;
+		else if (txr->rate <= DESC_RATEMCS31)
+			txr->rate_id = RTW_RATEID_ARFR7_N_4SS;
+		else
+			return;
+	}
+	else {
+		/* Legacy: rate is directly defined by supported bands index */
+		/*  => wiphy->bands[index] unit of 100 kbps */
+		u16 rate = info->control.rates[0].idx;
+		txr->nss = 0; /* not used */
+		txr->bw = RTW_CHANNEL_WIDTH_20;
+		txr->rate_id = RTW_RATEID_BG;
+
+		if (rate <= 10)
+			txr->rate = DESC_RATE1M;
+		else if (rate <= 20)
+			txr->rate = DESC_RATE2M;
+		else if (rate <= 55)
+			txr->rate = DESC_RATE5_5M;
+		else if (rate <= 60)
+			txr->rate = DESC_RATE6M;
+		else if (rate <= 90)
+			txr->rate = DESC_RATE9M;
+		else if (rate <= 110)
+			txr->rate = DESC_RATE11M;
+		else if (rate <= 120)
+			txr->rate = DESC_RATE12M;
+		else if (rate <= 240)
+			txr->rate = DESC_RATE24M;
+		else if (rate <= 360)
+			txr->rate = DESC_RATE36M;
+		else if (rate <= 480)
+			txr->rate = DESC_RATE48M;
+		else if (rate <= 540)
+			txr->rate = DESC_RATE54M;
+		else 
+			return;
+
+		txr->short_gi = false;
+		txr->ldpc = false;
+		txr->stbc = false;
+		txr->present = true;
+		return;
+	}
+
+	if (info->control.flags & IEEE80211_TX_RC_SHORT_GI)
+		txr->short_gi = true;
+	else
+		txr->short_gi = false;
+	if (info->control.flags & IEEE80211_TX_CTL_LDPC)
+		txr->ldpc = true;
+	else
+		txr->ldpc = false;
+	if (info->control.flags & IEEE80211_TX_CTL_STBC)
+		txr->stbc = true;
+	else
+		txr->stbc = false;
+
+	txr->present = true;
+	return;
+}
+
+void tx_rate_ctl_extract(struct ieee80211_tx_info *info)
+{
+	if (!(info->flags & IEEE80211_TX_CTL_INJECTED))
+		return;
+	if (!(info->control.flags & IEEE80211_TX_CTRL_RATE_INJECT))
+		return;
+
+	__tx_rate_ctl_extract(info, &skb_tx_rate_ctl);
+}
+
+
+static void __tx_rate_ctl_apply(struct rtw_tx_pkt_info *pkt_info,
+    struct tx_rate_ctl *txr)
+{
+	if (!txr->present)
+		return;
+
+	pkt_info->bw = txr->bw;
+	pkt_info->rate = txr->rate;
+	pkt_info->rate_id = txr->rate_id;
+	pkt_info->short_gi = txr->short_gi;
+	pkt_info->stbc = txr->stbc;
+	pkt_info->ldpc = txr->ldpc;
+	pkt_info->dis_rate_fallback = true;
+	pkt_info->use_rate = true;
+}
+
+void tx_rate_ctl_apply(struct rtw_tx_pkt_info *pkt_info)
+{
+	if (!skb_tx_rate_ctl.present)
+		return;
+
+	__tx_rate_ctl_apply(pkt_info, &skb_tx_rate_ctl);
+}
+
+void bcast_rate_ctl_apply(struct rtw_tx_pkt_info *pkt_info)
+{
+	if (skb_tx_rate_ctl.present)
+		return;
+	if (!bcast_rate_ctl)
+		return;
+	if (!skb_tx_rate_ctl_bcast.present)
+		return;
+
+	__tx_rate_ctl_apply(pkt_info, &skb_tx_rate_ctl_bcast);
+}
+

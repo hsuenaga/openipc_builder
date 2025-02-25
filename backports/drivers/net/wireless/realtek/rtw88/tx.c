@@ -462,8 +462,9 @@ out:
 		pkt_info->use_rate = true;
 	}
 #ifdef OPENIPC_EXT
+	tx_rate_ctl_apply(pkt_info);
 	if (!sta)
-		bcast_override(pkt_info);
+		bcast_rate_ctl_apply(pkt_info);
 #endif
 }
 
@@ -496,6 +497,10 @@ void rtw_tx_pkt_info_update(struct rtw_dev *rtwdev,
 
 	bmc = is_broadcast_ether_addr(hdr->addr1) ||
 	      is_multicast_ether_addr(hdr->addr1);
+
+#ifdef OPENIPC_EXT
+	tx_rate_ctl_extract(info);
+#endif
 
 	if (info->flags & IEEE80211_TX_CTL_REQ_TX_STATUS)
 		rtw_tx_report_enable(rtwdev, pkt_info);
