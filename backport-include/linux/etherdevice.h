@@ -38,4 +38,22 @@ static inline void u64_to_ether_addr(u64 u, u8 *addr)
 }
 #endif /* LINUX_VERSION_IS_LESS(4,11,0) */
 
+#if LINUX_VERSION_IS_LESS(5,15,37)
+static inline bool _ether_addr_equal_64bits(const u8 *addr1, const u8 *addr2)
+{
+#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
+        u64 fold = (*(const u64 *)addr1) ^ (*(const u64 *)addr2);
+
+#ifdef __BIG_ENDIAN
+        return (fold >> 16) == 0;
+#else
+        return (fold << 16) == 0;
+#endif
+#else
+        return ether_addr_equal(addr1, addr2);
+#endif
+}
+#define ether_addr_equal_64bits(x1, x2) _ether_addr_equal_64bits(x1, x2)
+#endif
+
 #endif /* _BACKPORT_LINUX_ETHERDEVICE_H */
